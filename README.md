@@ -41,7 +41,7 @@ uv run python -m unittest discover -s tests
 - `ai`: Non-mainland-China AI service domains (OpenAI, Anthropic, Gemini, …)
 - `streaming-cn`: Mainland-China streaming/media service domains (hand-maintained, for back-to-China routing)
 - `apple`: Apple service domains (App Store, iCloud, Apple Music, software updates, …)
-- `china-list`: Mainland-China domain list (geosite `cn` category)
+- `china`: Mainland-China domain list (geosite `cn` category)
 
 ## Artifacts in the `rel` Branch
 
