@@ -86,6 +86,7 @@ GEOSITE_TAGS = (
     "ai",
     "streaming-cn",
     "apple",
+    "china-list",
 )
 
 GFWLIST_TAGS = ("gfw", "gfw-skip")
@@ -713,6 +714,7 @@ def _run() -> None:
         ("geolocation-cn", "loc-cn", DIRECT_DOMAIN, DIRECT_DOMAIN_SUFFIX),
         ("category-ai-!cn", "ai", (), ()),
         ("apple", "apple", (), ()),
+        ("cn", "china-list", (), ()),
     )
     upstream_rules = parse_dlc_plain(
         "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat_plain.yml",

@@ -38,6 +38,7 @@ class LocalTagConfigTests(unittest.TestCase):
         self.assertIn("ai", GEOSITE_TAGS)
         self.assertIn("streaming-cn", GEOSITE_TAGS)
         self.assertIn("apple", GEOSITE_TAGS)
+        self.assertIn("china-list", GEOSITE_TAGS)
 
     def test_local_sources_point_at_existing_files(self):
         for tag, path in LOCAL_TAG_SOURCES.items():
