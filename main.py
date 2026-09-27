@@ -106,6 +106,13 @@ USER_AGENT = (
     "+https://github.com/Jovanykoch/rules)"
 )
 
+# Upstream source for the `china` tag: felixonmars/dnsmasq-china-list
+# (same recipe as Loyalsoldier's geosite:china-list, ~110k domains).
+DNSMASQ_CHINA_LIST_URL = (
+    "https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/"
+    "master/accelerated-domains.china.conf"
+)
+
 
 def fetch_url_bytes(url: str, *, timeout: int = DOWNLOAD_TIMEOUT_SECONDS) -> bytes:
     """Download bytes with retries and size guards."""
@@ -312,6 +319,33 @@ def parse_gfwlist(url: str) -> GeoSiteRules:
     """Download and parse the official plaintext GFWList."""
     log.info("Downloading %s", url)
     return parse_gfwlist_text(fetch_url_bytes(url))
+
+
+def parse_dnsmasq_china_list_text(
+    content: bytes,
+) -> tuple[list[str], list[str]]:
+    """Parse felixonmars dnsmasq-china-list accelerated-domains.china.conf.
+
+    Active lines look like ``server=/example.com/114.114.114.114``;
+    disabled entries are commented out with '#'. A dnsmasq ``server=``
+    entry matches the domain and all its subdomains, so every entry
+    becomes a domain suffix. Returns (exact_domains, domain_suffixes).
+    """
+    suffixes: list[str] = []
+    for raw_line in content.decode("utf-8", errors="replace").splitlines():
+        line = raw_line.strip()
+        if not line.startswith("server=/"):
+            continue
+        domain = line[len("server=/") :].split("/", 1)[0].strip().lower()
+        if domain:
+            suffixes.append(domain)
+    return [], list(dict.fromkeys(suffixes))
+
+
+def parse_dnsmasq_china_list(url: str) -> tuple[list[str], list[str]]:
+    """Download and parse the dnsmasq-china-list accelerated domains file."""
+    log.info("Downloading %s", url)
+    return parse_dnsmasq_china_list_text(fetch_url_bytes(url))
 
 
 def parse_local_domain_list(path: str) -> tuple[list[str], list[str]]:
@@ -714,11 +748,10 @@ def _run() -> None:
         ("geolocation-cn", "loc-cn", DIRECT_DOMAIN, DIRECT_DOMAIN_SUFFIX),
         ("category-ai-!cn", "ai", (), ()),
         ("apple", "apple", (), ()),
-        ("cn", "china", (), ()),
     )
     upstream_rules = parse_dlc_plain(
         "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat_plain.yml",
-        tuple(rule[0] for rule in rule_tags),
+        (*tuple(rule[0] for rule in rule_tags), "cn"),
     )
 
     geosite_rules: GeoSiteRules = {}
@@ -731,6 +764,18 @@ def _run() -> None:
         geosite_rules[output_tag] = release(
             domain, domain_suffix, domain_keyword, domain_regex, output_tag
         )
+
+    # `china`: v2fly `cn` merged with felixonmars dnsmasq-china-list
+    # (same recipe as Loyalsoldier's geosite:china-list, ~110k domains).
+    cn_domain, cn_suffix, cn_keyword, cn_regex = upstream_rules["cn"]
+    dq_domain, dq_suffix = parse_dnsmasq_china_list(DNSMASQ_CHINA_LIST_URL)
+    geosite_rules["china"] = release(
+        [*cn_domain, *dq_domain],
+        [*cn_suffix, *dq_suffix],
+        cn_keyword,
+        cn_regex,
+        "china",
+    )
 
     for output_tag, source_path in LOCAL_TAG_SOURCES.items():
         domain, domain_suffix = parse_local_domain_list(source_path)
