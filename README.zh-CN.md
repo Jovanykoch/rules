@@ -40,6 +40,7 @@ uv run python -m unittest discover -s tests
 - `gfw-skip`：来自 GFWList 的直连白名单规则
 - `ai`：中国大陆以外的 AI 服务域名（OpenAI、Anthropic、Gemini 等）
 - `streaming-cn`：中国大陆流媒体/音视频服务域名（手工维护，回国场景用）
+- `apple`：Apple 服务域名（App Store、iCloud、Apple Music、系统更新等）
 
 ## `rel` 分支的产物
 

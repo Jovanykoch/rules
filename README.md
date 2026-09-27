@@ -40,6 +40,7 @@ uv run python -m unittest discover -s tests
 - `gfw-skip`: Direct-connection allowlist rules from GFWList
 - `ai`: Non-mainland-China AI service domains (OpenAI, Anthropic, Gemini, …)
 - `streaming-cn`: Mainland-China streaming/media service domains (hand-maintained, for back-to-China routing)
+- `apple`: Apple service domains (App Store, iCloud, Apple Music, software updates, …)
 
 ## Artifacts in the `rel` Branch
 
