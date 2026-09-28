@@ -86,6 +86,7 @@ GEOSITE_TAGS = (
     "ai",
     "streaming-cn",
     "apple",
+    "douyin",
     "china",
 )
 
@@ -97,6 +98,17 @@ GFWLIST_TAGS = ("gfw", "gfw-skip")
 LOCAL_TAG_SOURCES = {
     "streaming-cn": "source/streaming-cn.list",
 }
+# Extra suffixes for the `douyin` tag: the upstream v2fly `douyin`
+# category only covers Beijing Douyin Technology domains, but the Douyin
+# app's core API (aweme.snssdk.com, api.snssdk.com, …) and its image CDNs
+# live in the shared `bytedance` category.
+DOUYIN_EXTRA_DOMAIN_SUFFIX = (
+    "snssdk.com",
+    "pstatp.com",
+    "byteimg.com",
+    "ibyteimg.com",
+)
+
 DOWNLOAD_TIMEOUT_SECONDS = 20
 DOWNLOAD_MAX_BYTES = 8 * 1024 * 1024
 DOWNLOAD_RETRIES = 3
@@ -748,6 +760,9 @@ def _run() -> None:
         ("geolocation-cn", "loc-cn", DIRECT_DOMAIN, DIRECT_DOMAIN_SUFFIX),
         ("category-ai-!cn", "ai", (), ()),
         ("apple", "apple", (), ()),
+        # `douyin`: upstream category lacks the shared ByteDance API/CDN
+        # domains the Douyin app itself uses, so they are added here.
+        ("douyin", "douyin", (), DOUYIN_EXTRA_DOMAIN_SUFFIX),
     )
     upstream_rules = parse_dlc_plain(
         "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat_plain.yml",

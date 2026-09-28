@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import yaml
 
-from main import parse_dlc_plain, parse_gfwlist_text, release_quanx_file
+from main import parse_dlc_plain, parse_gfwlist_text, parse_dnsmasq_china_list_text, release_quanx_file
 
 
 class ParseDLCTests(unittest.TestCase):
@@ -176,6 +176,20 @@ plain.example
             output,
             "host, exact.example, proxy\nhost-suffix, suffix.example, proxy\n",
         )
+
+
+class ParseDnsmasqChinaListTests(unittest.TestCase):
+    def test_parses_server_lines_as_suffixes(self) -> None:
+        source = (
+            "server=/example.com/114.114.114.114\n"
+            "server=/Sub.Example.CN/223.5.5.5\n"
+            "#server=/disabled.example/114.114.114.114 # Disabled\n"
+            "\n"
+            "server=/example.com/114.114.114.114\n"
+        )
+        domain, suffix = parse_dnsmasq_china_list_text(source.encode())
+        self.assertEqual(domain, [])
+        self.assertEqual(suffix, ["example.com", "sub.example.cn"])
 
 
 if __name__ == "__main__":

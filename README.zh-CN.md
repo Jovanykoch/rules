@@ -41,6 +41,7 @@ uv run python -m unittest discover -s tests
 - `ai`：中国大陆以外的 AI 服务域名（OpenAI、Anthropic、Gemini 等）
 - `streaming-cn`：中国大陆流媒体/音视频服务域名（手工维护，回国场景用）
 - `apple`：Apple 服务域名（App Store、iCloud、Apple Music、系统更新等）
+- `douyin`：抖音服务域名（douyin.com、snssdk.com、抖音火山版、汽水音乐、抖音支付/电商等）
 - `china`：中国大陆域名列表——v2fly `cn` 合并 felixonmars dnsmasq-china-list（约 11 万域名，与 Loyalsoldier 的 `geosite:china-list` 同配方）
 
 ## `rel` 分支的产物
