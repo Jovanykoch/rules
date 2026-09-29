@@ -114,4 +114,4 @@ rule-providers:
 
 本仓库代码基于 MIT 许可证发布（见 `LICENSE`）。
 
-上游规则数据（包括 `domain-list-community`、`GFWList` 及其他第三方来源）仍受各自上游项目的许可证与使用条款约束。本仓库仅做聚合、转换与分发。
+上游规则数据（包括 `domain-list-community`、`GFWList`、`Loyalsoldier/geoip`（`tools/mmdb` 中国区 MMDB 生成器所用）及其他第三方来源）仍受各自上游项目的许可证与使用条款约束。本仓库仅做聚合、转换与分发。

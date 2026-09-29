@@ -114,4 +114,4 @@ rule-providers:
 
 The code in this repository is released under the MIT License (see `LICENSE`).
 
-Upstream rule data, including `domain-list-community`, `GFWList`, and other third-party sources, remains subject to the licenses and terms of use of the respective upstream projects. This repository only aggregates, converts, and distributes the data.
+Upstream rule data, including `domain-list-community`, `GFWList`, `Loyalsoldier/geoip` (used by the `tools/mmdb` China-only MMDB generator), and other third-party sources, remains subject to the licenses and terms of use of the respective upstream projects. This repository only aggregates, converts, and distributes the data.
