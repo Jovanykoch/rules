@@ -112,6 +112,11 @@ rule-providers:
 
 ## 许可证与上游归属
 
-本仓库代码基于 MIT 许可证发布（见 `LICENSE`）。
+本仓库的原创代码（生成脚本、CI workflow、测试以及 `source/` 下手工维护的文件）基于 MIT 许可证发布（见 `LICENSE`）。
 
-上游规则数据（包括 `domain-list-community`、`GFWList`、`Loyalsoldier/geoip`（`tools/mmdb` 中国区 MMDB 生成器所用）及其他第三方来源）仍受各自上游项目的许可证与使用条款约束。本仓库仅做聚合、转换与分发。
+本项目为独立项目，与下列上游项目无隶属、背书或 fork 关系。规则数据在构建时从公开上游来源拉取，经清洗、转换后以代理工具格式重新发布。所有上游数据仍受各自项目的许可证与使用条款约束：
+
+- [v2fly/domain-list-community](https://github.com/v2fly/domain-list-community) —— MIT 许可证，Copyright (c) 2018-2019 V2Ray。多数标签（`apple`、`douyin`、`ai`、`geolocation-cn` 等）的主要域名数据来源。
+- [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) —— `gfw` / `gfw-skip` 标签的数据来源。
+- [felixonmars/dnsmasq-china-list](https://github.com/felixonmars/dnsmasq-china-list) —— WTFPL，与 v2fly `cn` 合并生成 `china` 标签。
+- [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip) —— `tools/mmdb` 中国区 MMDB 生成器（`chnroutes.mmdb`）所用的 `cn.txt` 来源。

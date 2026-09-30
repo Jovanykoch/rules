@@ -112,6 +112,11 @@ rule-providers:
 
 ## License and Upstream Attribution
 
-The code in this repository is released under the MIT License (see `LICENSE`).
+The original code in this repository (generator scripts, CI workflows, tests, and the hand-maintained files under `source/`) is released under the MIT License (see `LICENSE`).
 
-Upstream rule data, including `domain-list-community`, `GFWList`, `Loyalsoldier/geoip` (used by the `tools/mmdb` China-only MMDB generator), and other third-party sources, remains subject to the licenses and terms of use of the respective upstream projects. This repository only aggregates, converts, and distributes the data.
+This is an independent project. It is not affiliated with, endorsed by, or a fork of any of the upstream projects listed below. Rule data is fetched from public upstream sources at build time, then cleaned, converted, and republished in proxy-tool formats. All upstream data remains subject to the licenses and terms of its respective project:
+
+- [v2fly/domain-list-community](https://github.com/v2fly/domain-list-community) — MIT License, Copyright (c) 2018-2019 V2Ray. Primary domain data for most tags (`apple`, `douyin`, `ai`, `geolocation-cn`, …).
+- [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) — data for the `gfw` / `gfw-skip` tags.
+- [felixonmars/dnsmasq-china-list](https://github.com/felixonmars/dnsmasq-china-list) — WTFPL, merged with v2fly `cn` for the `china` tag.
+- [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip) — `cn.txt` used by the `tools/mmdb` China-only MMDB generator (`chnroutes.mmdb`).
