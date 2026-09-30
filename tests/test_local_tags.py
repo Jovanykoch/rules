@@ -2,7 +2,28 @@ import os
 import tempfile
 import unittest
 
-from main import GEOSITE_TAGS, LOCAL_TAG_SOURCES, parse_local_domain_list
+from main import (
+    GEOSITE_TAGS,
+    LOCAL_TAG_SOURCES,
+    parse_hagezi_onlydomains_text,
+    parse_local_domain_list,
+)
+
+
+class ParseHageziOnlydomainsTests(unittest.TestCase):
+    def test_parses_bare_domains_as_suffixes(self):
+        content = (
+            "# Title: HaGeZi's Multi PRO\n"
+            "\n"
+            "ads.example.com\n"
+            "TRACKER.EXAMPLE.ORG\n"
+            "ads.example.com\n"  # duplicate
+        )
+        domain, domain_suffix = parse_hagezi_onlydomains_text(
+            content.encode("utf-8")
+        )
+        self.assertEqual(domain, [])
+        self.assertEqual(domain_suffix, ["ads.example.com", "tracker.example.org"])
 
 
 class ParseLocalDomainListTests(unittest.TestCase):
@@ -40,6 +61,8 @@ class LocalTagConfigTests(unittest.TestCase):
         self.assertIn("apple", GEOSITE_TAGS)
         self.assertIn("douyin", GEOSITE_TAGS)
         self.assertIn("china", GEOSITE_TAGS)
+        self.assertIn("ads", GEOSITE_TAGS)
+        self.assertIn("ads-mini", GEOSITE_TAGS)
 
     def test_local_sources_point_at_existing_files(self):
         for tag, path in LOCAL_TAG_SOURCES.items():

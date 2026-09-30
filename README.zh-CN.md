@@ -43,6 +43,8 @@ uv run python -m unittest discover -s tests
 - `apple`：Apple 服务域名（App Store、iCloud、Apple Music、系统更新等）
 - `douyin`：抖音服务域名（douyin.com、snssdk.com、抖音火山版、汽水音乐、抖音支付/电商等）
 - `china`：中国大陆域名列表——v2fly `cn` 合并 felixonmars dnsmasq-china-list（约 11 万域名，与 Loyalsoldier 的 `geosite:china-list` 同配方）
+- `ads`：广告/追踪拦截列表——hagezi Multi PRO（约 23 万域名，推荐）
+- `ads-mini`：轻量广告/追踪拦截列表——hagezi Multi PRO mini（约 6 万域名）
 
 ## `rel` 分支的产物
 
@@ -120,3 +122,4 @@ rule-providers:
 - [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) —— `gfw` / `gfw-skip` 标签的数据来源。
 - [felixonmars/dnsmasq-china-list](https://github.com/felixonmars/dnsmasq-china-list) —— WTFPL，与 v2fly `cn` 合并生成 `china` 标签。
 - [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip) —— `tools/mmdb` 中国区 MMDB 生成器（`chnroutes.mmdb`）所用的 `cn.txt` 来源。
+- [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) —— GNU 通用公共许可证第 3 版（GPL-3.0）。`ads` / `ads-mini` 标签所用的 Multi PRO / PRO mini 列表来源。

@@ -88,6 +88,8 @@ GEOSITE_TAGS = (
     "apple",
     "douyin",
     "china",
+    "ads",
+    "ads-mini",
 )
 
 GFWLIST_TAGS = ("gfw", "gfw-skip")
@@ -123,6 +125,19 @@ USER_AGENT = (
 DNSMASQ_CHINA_LIST_URL = (
     "https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/"
     "master/accelerated-domains.china.conf"
+)
+
+# Upstream sources for the `ads` / `ads-mini` tags: hagezi/dns-blocklists
+# "domains only" lists (one bare domain per line, '#' starts a comment).
+# Every entry matches the domain and its subdomains (wildcard semantics),
+# so all entries become domain suffixes.
+HAGEZI_ADS_URL = (
+    "https://raw.githubusercontent.com/hagezi/dns-blocklists/"
+    "main/wildcard/pro-onlydomains.txt"
+)
+HAGEZI_ADS_MINI_URL = (
+    "https://raw.githubusercontent.com/hagezi/dns-blocklists/"
+    "main/wildcard/pro.mini-onlydomains.txt"
 )
 
 
@@ -358,6 +373,31 @@ def parse_dnsmasq_china_list(url: str) -> tuple[list[str], list[str]]:
     """Download and parse the dnsmasq-china-list accelerated domains file."""
     log.info("Downloading %s", url)
     return parse_dnsmasq_china_list_text(fetch_url_bytes(url))
+
+
+def parse_hagezi_onlydomains_text(
+    content: bytes,
+) -> tuple[list[str], list[str]]:
+    """Parse a hagezi/dns-blocklists ``*-onlydomains.txt`` file.
+
+    One bare domain per line; lines starting with '#' and blank lines are
+    ignored. Each entry matches the domain and all its subdomains, so
+    every entry becomes a domain suffix.
+    Returns (exact_domains, domain_suffixes) deduplicated in file order.
+    """
+    suffixes: list[str] = []
+    for raw_line in content.decode("utf-8", errors="replace").splitlines():
+        line = raw_line.strip().lower()
+        if not line or line.startswith("#"):
+            continue
+        suffixes.append(line)
+    return [], list(dict.fromkeys(suffixes))
+
+
+def parse_hagezi_onlydomains(url: str) -> tuple[list[str], list[str]]:
+    """Download and parse a hagezi/dns-blocklists onlydomains file."""
+    log.info("Downloading %s", url)
+    return parse_hagezi_onlydomains_text(fetch_url_bytes(url))
 
 
 def parse_local_domain_list(path: str) -> tuple[list[str], list[str]]:
@@ -790,6 +830,20 @@ def _run() -> None:
         cn_keyword,
         cn_regex,
         "china",
+    )
+
+    # `ads` / `ads-mini`: hagezi Multi PRO / PRO mini blocklists
+    # (ads, trackers, telemetry, malware, phishing, …). Both rebuild
+    # daily from the upstream lists via CI.
+    ads_domain, ads_suffix = parse_hagezi_onlydomains(HAGEZI_ADS_URL)
+    geosite_rules["ads"] = release(
+        ads_domain, ads_suffix, [], [], "ads"
+    )
+    ads_mini_domain, ads_mini_suffix = parse_hagezi_onlydomains(
+        HAGEZI_ADS_MINI_URL
+    )
+    geosite_rules["ads-mini"] = release(
+        ads_mini_domain, ads_mini_suffix, [], [], "ads-mini"
     )
 
     for output_tag, source_path in LOCAL_TAG_SOURCES.items():

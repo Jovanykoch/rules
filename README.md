@@ -43,6 +43,8 @@ uv run python -m unittest discover -s tests
 - `apple`: Apple service domains (App Store, iCloud, Apple Music, software updates, …)
 - `douyin`: Douyin (TikTok China) service domains (douyin.com, snssdk.com, Douyin Lite/Huoshan, Qishui Music, Douyin Pay/E-commerce, …)
 - `china`: Mainland-China domain list — v2fly `cn` merged with felixonmars dnsmasq-china-list (~110k domains, same recipe as Loyalsoldier's `geosite:china-list`)
+- `ads`: Ad/tracker blocklist — hagezi Multi PRO (~230k domains, recommended)
+- `ads-mini`: Lightweight ad/tracker blocklist — hagezi Multi PRO mini (~60k domains)
 
 ## Artifacts in the `rel` Branch
 
@@ -120,3 +122,4 @@ This is an independent project. It is not affiliated with, endorsed by, or a for
 - [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) — data for the `gfw` / `gfw-skip` tags.
 - [felixonmars/dnsmasq-china-list](https://github.com/felixonmars/dnsmasq-china-list) — WTFPL, merged with v2fly `cn` for the `china` tag.
 - [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip) — `cn.txt` used by the `tools/mmdb` China-only MMDB generator (`chnroutes.mmdb`).
+- [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) — GNU General Public License v3.0 (GPL-3.0). Multi PRO / PRO mini lists used for the `ads` / `ads-mini` tags.
