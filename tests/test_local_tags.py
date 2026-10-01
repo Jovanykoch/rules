@@ -58,6 +58,7 @@ class LocalTagConfigTests(unittest.TestCase):
     def test_new_tags_registered(self):
         self.assertIn("ai", GEOSITE_TAGS)
         self.assertIn("streaming-cn", GEOSITE_TAGS)
+        self.assertIn("school", GEOSITE_TAGS)
         self.assertIn("apple", GEOSITE_TAGS)
         self.assertIn("douyin", GEOSITE_TAGS)
         self.assertIn("china", GEOSITE_TAGS)
@@ -92,6 +93,28 @@ class LocalTagConfigTests(unittest.TestCase):
             "bilibili.com",
             "iqiyi.com",
             "kuaishou.com",
+        ):
+            self.assertIn(expected, joined)
+
+
+    def test_school_entries_are_valid_domain_suffixes(self):
+        path = LOCAL_TAG_SOURCES["school"]
+        _, domain_suffix = parse_local_domain_list(path)
+        self.assertGreater(len(domain_suffix), 5)
+        for suffix in domain_suffix:
+            with self.subTest(suffix=suffix):
+                self.assertRegex(suffix, r"^[a-z0-9.-]+\.[a-z]{2,}$")
+                self.assertFalse(suffix.startswith("."))
+        # Spot-check services the tag is meant to cover.
+        joined = "\n".join(domain_suffix)
+        for expected in (
+            "jjc.edu",
+            "lanecc.edu",
+            "duosecurity.com",
+            "office365.com",
+            "microsoftonline.com",
+            "accounts.google.com",
+            "mimecast.com",
         ):
             self.assertIn(expected, joined)
 

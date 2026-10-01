@@ -85,6 +85,7 @@ GEOSITE_TAGS = (
     "loc-cn",
     "ai",
     "streaming-cn",
+    "school",
     "apple",
     "douyin",
     "china",
@@ -99,6 +100,7 @@ GFWLIST_TAGS = ("gfw", "gfw-skip")
 # a leading dot marks a domain suffix, '#' starts a comment.
 LOCAL_TAG_SOURCES = {
     "streaming-cn": "source/streaming-cn.list",
+    "school": "source/school.list",
 }
 # Extra suffixes for the `douyin` tag: the upstream v2fly `douyin`
 # category only covers Beijing Douyin Technology domains, but the Douyin

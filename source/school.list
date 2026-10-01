@@ -1,0 +1,26 @@
+# 学校 / 教育机构相关域名（手工维护）。
+#
+# 构建时发布为 dist/school.list 等全格式规则集，
+# Surge 订阅示例：
+#   DOMAIN-SET,https://github.com/Jovanykoch/rules/raw/rel/school.list,<policy>
+#
+# 格式：每行一个域名，行首 '.' 表示后缀匹配，否则为精确匹配。
+# 以 '#' 开头的行是注释。
+
+# ── 学校官网 ──
+.jjc.edu
+.lanecc.edu
+
+# ── Microsoft 365 ──
+.office.com
+.office365.com
+.outlook.office365.com
+.microsoftonline.com
+
+# ── Google（学校邮箱 / 账号登录） ──
+.mail.google.com
+.accounts.google.com
+
+# ── 身份验证 / 邮件安全 ──
+.duosecurity.com
+.mimecast.com

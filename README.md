@@ -40,6 +40,7 @@ uv run python -m unittest discover -s tests
 - `gfw-skip`: Direct-connection allowlist rules from GFWList
 - `ai`: Non-mainland-China AI service domains (OpenAI, Anthropic, Gemini, …)
 - `streaming-cn`: Mainland-China streaming/media service domains (hand-maintained, for back-to-China routing)
+- `school`: School and education service domains (hand-maintained: jjc.edu, lanecc.edu, Microsoft 365, Google accounts, Duo Security, Mimecast, …)
 - `apple`: Apple service domains (App Store, iCloud, Apple Music, software updates, …)
 - `douyin`: Douyin (TikTok China) service domains (douyin.com, snssdk.com, Douyin Lite/Huoshan, Qishui Music, Douyin Pay/E-commerce, …)
 - `china`: Mainland-China domain list — v2fly `cn` merged with felixonmars dnsmasq-china-list (~110k domains, same recipe as Loyalsoldier's `geosite:china-list`)
