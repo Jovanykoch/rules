@@ -9,13 +9,12 @@
 #   reject.yaml      Ad/tracker blocklist            -> REJECT
 #   school.yaml      School & education domains      -> School group
 #   loc-cn.yaml      Mainland China domains          -> DIRECT
-#   gfw.yaml         GFW-blocked domains             -> Proxy
-#   gfw-ipcidr.yaml  GFW-blocked IPs                 -> Proxy
-#   loc-!cn.yaml     Non-mainland domains            -> Proxy
+#   apple.yaml       Apple services                  -> DIRECT
+#   douyin.yaml      Douyin (China TikTok)           -> DIRECT
 #
 # Other tags available on rel (add your own providers as needed):
-#   ads.yaml, ads-mini.yaml, apple.yaml, china.yaml, douyin.yaml,
-#   streaming-cn.yaml, ai.yaml, microsoft.yaml
+#   ads.yaml, ads-mini.yaml, china.yaml, streaming-cn.yaml,
+#   ai.yaml, microsoft.yaml, gfw.yaml, gfw-ipcidr.yaml, loc-!cn.yaml
 #
 # QUICK START
 #   1. Replace "https://your-subscription-url" below with your own link
@@ -133,23 +132,17 @@ rule-providers:
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-cn.yaml
     path: ./ruleset/LocCN.yaml
     interval: 86400
-  GFW:
+  Apple:
     type: http
     behavior: domain
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw.yaml
-    path: ./ruleset/GFW.yaml
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple.yaml
+    path: ./ruleset/Apple.yaml
     interval: 86400
-  GFW-IP:
-    type: http
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw-ipcidr.yaml
-    path: ./ruleset/GFW-IP.yaml
-    interval: 86400
-  LocNotCN:
+  Douyin:
     type: http
     behavior: domain
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-!cn.yaml
-    path: ./ruleset/LocNotCN.yaml
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/douyin.yaml
+    path: ./ruleset/Douyin.yaml
     interval: 86400
 
 rules:
@@ -162,11 +155,10 @@ rules:
   - RULE-SET,Reject,ADBlock
   # School & education services.
   - RULE-SET,School,School
+  - RULE-SET,Apple,DIRECT
+  - RULE-SET,Douyin,DIRECT
   # Mainland China — direct.
   - RULE-SET,LocCN,DIRECT
   - GEOIP,CN,DIRECT
-  # GFW-blocked and other overseas traffic — proxy.
-  - RULE-SET,GFW,Proxy
-  - RULE-SET,GFW-IP,Proxy
-  - RULE-SET,LocNotCN,Proxy
+  # Fallthrough.
   - MATCH,Final
