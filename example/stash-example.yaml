@@ -6,7 +6,7 @@
 # no external-controller, iOS-friendly DNS notes.
 #
 # Tags used here:
-#   reject.yaml      Ad/tracker blocklist            -> REJECT
+#   ads-mini.yaml    Lightweight ad/tracker blocklist -> REJECT
 #   school.yaml      School & education domains      -> Auto
 #   loc-cn.yaml      Mainland China domains          -> DIRECT
 #   apple.yaml       Apple services                  -> DIRECT
@@ -94,12 +94,12 @@ proxy-groups:
 
 # Rule tags: daily CI builds published on the `rel` branch.
 rule-providers:
-  Reject:
+  AdsMini:
     type: http
     behavior: domain
     format: text
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.yaml
-    path: ./ruleset/Reject.yaml
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/ads-mini.yaml
+    path: ./ruleset/AdsMini.yaml
     interval: 86400
   School:
     type: http
@@ -137,7 +137,7 @@ rules:
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
   # Block ads and trackers.
-  - RULE-SET,Reject,ADBlock
+  - RULE-SET,AdsMini,ADBlock
   # School & education services.
   - RULE-SET,School,Auto
   - RULE-SET,Apple,DIRECT
