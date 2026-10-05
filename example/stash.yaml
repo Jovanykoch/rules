@@ -88,15 +88,15 @@ proxy-groups:
   - name: Proxy
     type: select
     include-all: true
-    proxies: [DIRECT]
+    proxies: [direct]
   - name: Auto
     type: url-test
     include-all: true
     url: http://cp.cloudflare.com/generate_204
     interval: 600
     tolerance: 50
-  - {name: ADBlock, type: select, proxies: [REJECT, DIRECT]}
-  - {name: Final, type: select, proxies: [Auto, DIRECT]}
+  - {name: ADBlock, type: select, proxies: [REJECT, direct]}
+  - {name: Final, type: select, proxies: [Auto, direct]}
 
 # Rule tags: daily CI builds published on the `rel` branch.
 rule-providers:
