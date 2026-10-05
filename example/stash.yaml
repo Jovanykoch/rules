@@ -64,20 +64,25 @@ dns:
 # Option B: define proxies manually (examples commented out).
 # Never commit real credentials or subscription URLs to a public repo.
 # ===================================================================
-proxy-providers:
-  subscription:
-    type: http
-    url: https://your-subscription-url
-    interval: 3600
-    path: ./proxy_providers/subscription.yaml
-    health-check:
-      enable: true
-      interval: 600
-      url: http://cp.cloudflare.com/generate_204
+#proxy-providers:
+#  subscription:
+#    type: http
+#    url: https://your-subscription-url
+#    interval: 3600
+#    path: ./proxy_providers/subscription.yaml
+#    health-check:
+#      enable: true
+#      interval: 600
+#      url: http://cp.cloudflare.com/generate_204
+
 # proxies:
   # --- Shadowsocks example ---
   # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
   #    cipher: aes-256-gcm, password: YOUR_PASSWORD, udp: true}
+
+proxies:
+  - name: direct
+    type: direct
 
 proxy-groups:
   - name: Proxy
