@@ -63,7 +63,16 @@ dns:
 # Option B: define proxies manually (examples commented out).
 # Never commit real credentials or subscription URLs to a public repo.
 # ===================================================================
-
+proxy-providers:
+  subscription:
+    type: http
+    url: https://your-subscription-url
+    interval: 3600
+    path: ./proxy_providers/subscription.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: http://cp.cloudflare.com/generate_204
 # proxies:
   # --- Shadowsocks example ---
   # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
@@ -88,30 +97,35 @@ rule-providers:
   Reject:
     type: http
     behavior: domain
+    format: text
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.yaml
     path: ./ruleset/Reject.yaml
     interval: 86400
   School:
     type: http
     behavior: domain
+    format: text
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/school.yaml
     path: ./ruleset/School.yaml
     interval: 86400
   LocCN:
     type: http
     behavior: domain
+    format: text
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-cn.yaml
     path: ./ruleset/LocCN.yaml
     interval: 86400
   Apple:
     type: http
     behavior: domain
+    format: text
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple.yaml
     path: ./ruleset/Apple.yaml
     interval: 86400
   Douyin:
     type: http
     behavior: domain
+    format: text
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/douyin.yaml
     path: ./ruleset/Douyin.yaml
     interval: 86400
