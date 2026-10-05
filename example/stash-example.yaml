@@ -16,7 +16,7 @@
 #   1. In Stash: Settings -> Config -> Download from URL, paste:
 #      https://raw.githubusercontent.com/Jovanykoch/rules/main/example/stash-example.yaml
 #      (Or import this file directly via Files / AirDrop.)
-#   2. Replace "https://your-subscription-url" below with your own link.
+#   2. Add your nodes under `proxies:` below (or use a subscription link).
 #   3. Enable the VPN toggle in Stash and allow the VPN permission prompt.
 # ======================================================================
 
@@ -59,20 +59,10 @@ dns:
     - 8.8.8.8
 
 # ======================= ADD YOUR NODES HERE =======================
-# Option A: use a subscription (recommended). Replace the URL below.
-# Option B: define proxies manually (examples commented out).
+# Uncomment and fill in your proxies below (or import a subscription
+# link separately in Stash, then select nodes in the Proxy group).
 # Never commit real credentials or subscription URLs to a public repo.
 # ===================================================================
-proxy-providers:
-  subscription:
-    type: http
-    url: https://your-subscription-url
-    interval: 3600
-    path: ./proxy_providers/subscription.yaml
-    health-check:
-      enable: true
-      interval: 600
-      url: http://cp.cloudflare.com/generate_204
 # proxies:
   # --- Shadowsocks example ---
   # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
