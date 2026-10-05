@@ -15,7 +15,7 @@
 #
 # QUICK START (iOS)
 #   1. In Stash: Settings -> Config -> Download from URL, paste:
-#      https://raw.githubusercontent.com/Jovanykoch/rules/main/example/stash.yaml
+#      https://raw.githubusercontent.com/Jovanykoch/rules/main/example/stash-example.yaml
 #      (Or import this file directly via Files / AirDrop.)
 #   2. Replace "https://your-subscription-url" below with your own link.
 #   3. Enable the VPN toggle in Stash and allow the VPN permission prompt.
@@ -64,39 +64,34 @@ dns:
 # Option B: define proxies manually (examples commented out).
 # Never commit real credentials or subscription URLs to a public repo.
 # ===================================================================
-#proxy-providers:
-#  subscription:
-#    type: http
-#    url: https://your-subscription-url
-#    interval: 3600
-#    path: ./proxy_providers/subscription.yaml
-#    health-check:
-#      enable: true
-#      interval: 600
-#      url: http://cp.cloudflare.com/generate_204
-
+proxy-providers:
+  subscription:
+    type: http
+    url: https://your-subscription-url
+    interval: 3600
+    path: ./proxy_providers/subscription.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: http://cp.cloudflare.com/generate_204
 # proxies:
   # --- Shadowsocks example ---
   # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
   #    cipher: aes-256-gcm, password: YOUR_PASSWORD, udp: true}
 
-proxies:
-  - name: direct
-    type: direct
-
 proxy-groups:
   - name: Proxy
     type: select
     include-all: true
-    proxies: [direct]
+    proxies: [DIRECT]
   - name: Auto
     type: url-test
     include-all: true
     url: http://cp.cloudflare.com/generate_204
     interval: 600
     tolerance: 50
-  - {name: ADBlock, type: select, proxies: [REJECT, direct]}
-  - {name: Final, type: select, proxies: [Auto, direct]}
+  - {name: ADBlock, type: select, proxies: [REJECT, DIRECT]}
+  - {name: Final, type: select, proxies: [Auto, DIRECT]}
 
 # Rule tags: daily CI builds published on the `rel` branch.
 rule-providers:
@@ -112,23 +107,29 @@ rule-providers:
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/school.yaml
     path: ./ruleset/School.yaml
     interval: 86400
-  Apple:
-    type: http
-    behavior: domain
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple.yaml
-    path: ./ruleset/Apple.yaml
-    interval: 86400
-  Douyin:
-    type: http
-    behavior: domain
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/douyin.yaml
-    path: ./ruleset/Douyin.yaml
-    interval: 86400
   LocCN:
     type: http
     behavior: domain
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-cn.yaml
     path: ./ruleset/LocCN.yaml
+    interval: 86400
+  GFW:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw.yaml
+    path: ./ruleset/GFW.yaml
+    interval: 86400
+  GFW-IP:
+    type: http
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw-ipcidr.yaml
+    path: ./ruleset/GFW-IP.yaml
+    interval: 86400
+  LocNotCN:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-!cn.yaml
+    path: ./ruleset/LocNotCN.yaml
     interval: 86400
 
 rules:
@@ -145,6 +146,7 @@ rules:
   - RULE-SET,LocCN,DIRECT
   - GEOIP,CN,DIRECT
   # GFW-blocked and other overseas traffic — proxy.
-  - RULE-SET,Douyin,Proxy
-  - RULE-SET,Apple,DIRECT
+  - RULE-SET,GFW,Proxy
+  - RULE-SET,GFW-IP,Proxy
+  - RULE-SET,LocNotCN,Proxy
   - MATCH,Final
