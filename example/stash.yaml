@@ -1,0 +1,152 @@
+# ======================================================================
+# Jovanykoch/rules — Example Stash Config (iOS, Clash Premium core)
+# https://github.com/Jovanykoch/rules
+#
+# Same rule tags as example/clash.yaml, adapted for Stash on iOS:
+# no external-controller, iOS-friendly DNS notes.
+#
+# Tags used here:
+#   reject.yaml      Ad/tracker blocklist            -> REJECT
+#   school.yaml      School & education domains      -> Auto
+#   loc-cn.yaml      Mainland China domains          -> DIRECT
+#   gfw.yaml         GFW-blocked domains             -> Proxy
+#   gfw-ipcidr.yaml  GFW-blocked IPs                 -> Proxy
+#   loc-!cn.yaml     Non-mainland domains            -> Proxy
+#
+# QUICK START (iOS)
+#   1. In Stash: Settings -> Config -> Download from URL, paste:
+#      https://raw.githubusercontent.com/Jovanykoch/rules/main/example/stash.yaml
+#      (Or import this file directly via Files / AirDrop.)
+#   2. Replace "https://your-subscription-url" below with your own link.
+#   3. Enable the VPN toggle in Stash and allow the VPN permission prompt.
+# ======================================================================
+
+mode: rule
+log-level: info
+
+ipv6: false
+tcp-concurrent: true
+
+profile:
+  store-selected: true
+
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+
+dns:
+  enable: true
+  ipv6: false
+  listen: :53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - stun.*
+    - '*.apple.com'   # iOS services: keep real IP to avoid push/cert issues
+  nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  fallback:
+    - 1.1.1.1
+    - 8.8.8.8
+
+# ======================= ADD YOUR NODES HERE =======================
+# Option A: use a subscription (recommended). Replace the URL below.
+# Option B: define proxies manually (examples commented out).
+# Never commit real credentials or subscription URLs to a public repo.
+# ===================================================================
+proxy-providers:
+  subscription:
+    type: http
+    url: https://your-subscription-url
+    interval: 3600
+    path: ./proxy_providers/subscription.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: http://cp.cloudflare.com/generate_204
+# proxies:
+  # --- Shadowsocks example ---
+  # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
+  #    cipher: aes-256-gcm, password: YOUR_PASSWORD, udp: true}
+
+proxy-groups:
+  - name: Proxy
+    type: select
+    include-all: true
+    proxies: [DIRECT]
+  - name: Auto
+    type: url-test
+    include-all: true
+    url: http://cp.cloudflare.com/generate_204
+    interval: 600
+    tolerance: 50
+  - {name: ADBlock, type: select, proxies: [REJECT, DIRECT]}
+  - {name: Final, type: select, proxies: [Auto, DIRECT]}
+
+# Rule tags: daily CI builds published on the `rel` branch.
+rule-providers:
+  Reject:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.yaml
+    path: ./ruleset/Reject.yaml
+    interval: 86400
+  School:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/school.yaml
+    path: ./ruleset/School.yaml
+    interval: 86400
+  LocCN:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-cn.yaml
+    path: ./ruleset/LocCN.yaml
+    interval: 86400
+  GFW:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw.yaml
+    path: ./ruleset/GFW.yaml
+    interval: 86400
+  GFW-IP:
+    type: http
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw-ipcidr.yaml
+    path: ./ruleset/GFW-IP.yaml
+    interval: 86400
+  LocNotCN:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-!cn.yaml
+    path: ./ruleset/LocNotCN.yaml
+    interval: 86400
+
+rules:
+  # Local networks first — never proxied.
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  # Block ads and trackers.
+  - RULE-SET,Reject,ADBlock
+  # School & education services.
+  - RULE-SET,School,Auto
+  # Mainland China — direct.
+  - RULE-SET,LocCN,DIRECT
+  - GEOIP,CN,DIRECT
+  # GFW-blocked and other overseas traffic — proxy.
+  - RULE-SET,GFW,Proxy
+  - RULE-SET,GFW-IP,Proxy
+  - RULE-SET,LocNotCN,Proxy
+  - MATCH,Final
