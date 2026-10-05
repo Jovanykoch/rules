@@ -81,7 +81,10 @@ dns:
 # link separately in your client, then select nodes in the Proxy group).
 # Never commit real credentials or subscription URLs to a public repo.
 # ===================================================================
-# proxies:
+proxies:
+  - name: "direct"
+    type: direct
+    udp: true
   # --- Shadowsocks example ---
   # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
   #    cipher: aes-256-gcm, password: YOUR_PASSWORD, udp: true}
