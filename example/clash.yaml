@@ -10,7 +10,7 @@
 #   school.yaml      School & education domains      -> School group
 #   loc-cn.yaml      Mainland China domains          -> DIRECT
 #   apple.yaml       Apple services                  -> DIRECT
-#   douyin.yaml      Douyin (China TikTok)           -> DIRECT
+#   douyin.yaml      Douyin (China TikTok)           -> Proxy
 #
 # Other tags available on rel (add your own providers as needed):
 #   ads.yaml, ads-mini.yaml, china.yaml, streaming-cn.yaml,
@@ -156,7 +156,7 @@ rules:
   # School & education services.
   - RULE-SET,School,School
   - RULE-SET,Apple,DIRECT
-  - RULE-SET,Douyin,DIRECT
+  - RULE-SET,Douyin,Proxy
   # Mainland China — direct.
   - RULE-SET,LocCN,DIRECT
   - GEOIP,CN,DIRECT
