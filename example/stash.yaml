@@ -107,29 +107,23 @@ rule-providers:
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/school.yaml
     path: ./ruleset/School.yaml
     interval: 86400
+  Apple:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple.yaml
+    path: ./ruleset/Apple.yaml
+    interval: 86400
+  Douyin:
+    type: http
+    behavior: domain
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/douyin.yaml
+    path: ./ruleset/Douyin.yaml
+    interval: 86400
   LocCN:
     type: http
     behavior: domain
     url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-cn.yaml
     path: ./ruleset/LocCN.yaml
-    interval: 86400
-  GFW:
-    type: http
-    behavior: domain
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw.yaml
-    path: ./ruleset/GFW.yaml
-    interval: 86400
-  GFW-IP:
-    type: http
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/gfw-ipcidr.yaml
-    path: ./ruleset/GFW-IP.yaml
-    interval: 86400
-  LocNotCN:
-    type: http
-    behavior: domain
-    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-!cn.yaml
-    path: ./ruleset/LocNotCN.yaml
     interval: 86400
 
 rules:
@@ -146,7 +140,6 @@ rules:
   - RULE-SET,LocCN,DIRECT
   - GEOIP,CN,DIRECT
   # GFW-blocked and other overseas traffic — proxy.
-  - RULE-SET,GFW,Proxy
-  - RULE-SET,GFW-IP,Proxy
-  - RULE-SET,LocNotCN,Proxy
+  - RULE-SET,Douyin,Proxy
+  - RULE-SET,Apple,DIRECT
   - MATCH,Final
