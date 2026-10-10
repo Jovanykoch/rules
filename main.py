@@ -95,6 +95,17 @@ GEOSITE_TAGS = (
 
 GFWLIST_TAGS = ("gfw", "gfw-skip")
 
+# QuanX policy baked into each tag's *.quanx file. Block lists ship
+# `reject` so subscribers without an explicit force-policy still block;
+# routing lists keep the neutral `direct` default.
+QUANX_POLICY_BY_TAG = {
+    "reject": "reject",
+    "ads": "reject",
+    "ads-mini": "reject",
+    "gfw": "proxy",
+    "gfw-skip": "direct",
+}
+
 # Tags built from hand-maintained local sources instead of upstream data.
 # Format follows source/maintained.list: one domain per line,
 # a leading dot marks a domain suffix, '#' starts a comment.
@@ -617,7 +628,7 @@ def validate_clash_yaml(path: str) -> None:
 
 def validate_quanx_file(path: str) -> None:
     line_pattern = re.compile(
-        r"^(host|host-suffix|host-keyword|ip-cidr),\s*[^,\s]+,\s*(direct|proxy)$"
+        r"^(host|host-suffix|host-keyword|ip-cidr),\s*[^,\s]+,\s*(direct|proxy|reject)$"
     )
     with open(path, encoding="utf-8") as f:
         for index, raw_line in enumerate(f, start=1):
@@ -819,7 +830,12 @@ def _run() -> None:
         domain.extend(extra_domains)
         domain_suffix.extend(extra_suffixes)
         geosite_rules[output_tag] = release(
-            domain, domain_suffix, domain_keyword, domain_regex, output_tag
+            domain,
+            domain_suffix,
+            domain_keyword,
+            domain_regex,
+            output_tag,
+            quanx_policy=QUANX_POLICY_BY_TAG.get(output_tag, "direct"),
         )
 
     # `china`: v2fly `cn` merged with felixonmars dnsmasq-china-list
@@ -839,13 +855,18 @@ def _run() -> None:
     # daily from the upstream lists via CI.
     ads_domain, ads_suffix = parse_hagezi_onlydomains(HAGEZI_ADS_URL)
     geosite_rules["ads"] = release(
-        ads_domain, ads_suffix, [], [], "ads"
+        ads_domain, ads_suffix, [], [], "ads", quanx_policy=QUANX_POLICY_BY_TAG["ads"]
     )
     ads_mini_domain, ads_mini_suffix = parse_hagezi_onlydomains(
         HAGEZI_ADS_MINI_URL
     )
     geosite_rules["ads-mini"] = release(
-        ads_mini_domain, ads_mini_suffix, [], [], "ads-mini"
+        ads_mini_domain,
+        ads_mini_suffix,
+        [],
+        [],
+        "ads-mini",
+        quanx_policy=QUANX_POLICY_BY_TAG["ads-mini"],
     )
 
     for output_tag, source_path in LOCAL_TAG_SOURCES.items():

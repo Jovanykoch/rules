@@ -30,6 +30,11 @@ subscription {
   my_sub: 'https://www.example.com/subscription/link'
 }
 
+# NOTE: `geosite:loc-cn` is a custom code from this repository's geosite.dat
+# (https://github.com/Jovanykoch/rules/raw/rel/geosite.dat) — dae's stock
+# geodata has no such code, so the rules below only match once that file is
+# installed as dae's geosite.dat. With stock geodata, use `geosite:cn`.
+
 dns {
   ipversion_prefer: 4
   upstream {

@@ -7,6 +7,7 @@ from unittest.mock import patch
 import yaml
 
 from main import (
+    QUANX_POLICY_BY_TAG,
     extract_ip_cidrs,
     release_clash_file,
     release_clash_ipcidr_file,
@@ -66,6 +67,21 @@ class OutputFormatTests(unittest.TestCase):
                 self.assertEqual(content[0], "host, a.example, direct")
             finally:
                 os.chdir(current)
+
+    def test_quanx_accepts_reject_policy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory, "tag.quanx")
+            path.write_text("host-suffix, ads.example, reject\n")
+            validate_quanx_file(str(path))
+
+    def test_block_tags_ship_reject_quanx_policy(self):
+        # Block lists must bake `reject` into their *.quanx files so that
+        # subscribers without an explicit force-policy still block.
+        for tag in ("reject", "ads", "ads-mini"):
+            self.assertEqual(QUANX_POLICY_BY_TAG[tag], "reject")
+        self.assertEqual(QUANX_POLICY_BY_TAG["gfw"], "proxy")
+        self.assertEqual(QUANX_POLICY_BY_TAG["gfw-skip"], "direct")
+        self.assertEqual(QUANX_POLICY_BY_TAG.get("loc-cn", "direct"), "direct")
 
     def test_singbox_json_validation(self):
         with tempfile.TemporaryDirectory() as directory:

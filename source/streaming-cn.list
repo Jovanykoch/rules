@@ -2,7 +2,7 @@
 #
 # 构建时发布为 dist/streaming-cn.list 等全格式规则集，
 # Surge 订阅示例：
-#   DOMAIN-SET,https://github.com/Jovanykoch/rules/releases/latest/download/streaming-cn.list
+#   DOMAIN-SET,https://github.com/Jovanykoch/rules/raw/rel/streaming-cn.list,<policy>
 #
 # 格式：每行一个域名，行首 '.' 表示后缀匹配，否则为精确匹配。
 # 以 '#' 开头的行是注释。
