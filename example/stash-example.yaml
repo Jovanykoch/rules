@@ -1,0 +1,139 @@
+# ======================================================================
+# Jovanykoch/rules — Example Stash Config (iOS, Clash Premium core)
+# https://github.com/Jovanykoch/rules
+#
+# Same rule tags as example/clash.yaml, adapted for Stash on iOS:
+# no external-controller, iOS-friendly DNS notes.
+#
+# Tags used here:
+#   ads-mini.yaml    Lightweight ad/tracker blocklist -> REJECT
+#   school.yaml      School & education domains      -> Auto
+#   loc-cn.yaml      Mainland China domains          -> DIRECT
+#   apple.yaml       Apple services                  -> DIRECT
+#   douyin.yaml      Douyin (China TikTok)           -> Proxy
+#
+# QUICK START (iOS)
+#   1. In Stash: Settings -> Config -> Download from URL, paste:
+#      https://raw.githubusercontent.com/Jovanykoch/rules/main/example/stash-example.yaml
+#      (Or import this file directly via Files / AirDrop.)
+#   2. Add your nodes under `proxies:` below (or use a subscription link).
+#   3. Enable the VPN toggle in Stash and allow the VPN permission prompt.
+# ======================================================================
+
+mode: rule
+log-level: info
+
+ipv6: false
+tcp-concurrent: true
+
+profile:
+  store-selected: true
+
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+
+dns:
+  enable: true
+  ipv6: false
+  listen: :53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - stun.*
+    - '*.apple.com'   # iOS services: keep real IP to avoid push/cert issues
+  nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  fallback:
+    - 1.1.1.1
+    - 8.8.8.8
+
+# ======================= ADD YOUR NODES HERE =======================
+# Uncomment and fill in your proxies below (or import a subscription
+# link separately in Stash, then select nodes in the Proxy group).
+# Never commit real credentials or subscription URLs to a public repo.
+# ===================================================================
+# proxies:
+  # --- Shadowsocks example ---
+  # - {name: HK-SS, type: ss, server: YOUR_SERVER, port: 8388,
+  #    cipher: aes-256-gcm, password: YOUR_PASSWORD, udp: true}
+
+proxy-groups:
+  - name: Proxy
+    type: select
+    include-all: true
+    proxies: [DIRECT]
+  - name: Auto
+    type: url-test
+    include-all: true
+    url: http://cp.cloudflare.com/generate_204
+    interval: 600
+    tolerance: 50
+  - {name: ADBlock, type: select, proxies: [REJECT, DIRECT]}
+  - {name: Final, type: select, proxies: [Auto, DIRECT]}
+
+# Rule tags: daily CI builds published on the `rel` branch.
+rule-providers:
+  AdsMini:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/ads-mini.yaml
+    path: ./ruleset/AdsMini.yaml
+    interval: 86400
+  School:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/school.yaml
+    path: ./ruleset/School.yaml
+    interval: 86400
+  LocCN:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/loc-cn.yaml
+    path: ./ruleset/LocCN.yaml
+    interval: 86400
+  Apple:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple.yaml
+    path: ./ruleset/Apple.yaml
+    interval: 86400
+  Douyin:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/Jovanykoch/rules/rel/douyin.yaml
+    path: ./ruleset/Douyin.yaml
+    interval: 86400
+
+rules:
+  # Local networks first — never proxied.
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  # Block ads and trackers.
+  - RULE-SET,AdsMini,ADBlock
+  # School & education services.
+  - RULE-SET,School,Auto
+  - RULE-SET,Apple,DIRECT
+  - RULE-SET,Douyin,Proxy
+  # Mainland China — direct.
+  - RULE-SET,LocCN,DIRECT
+  - GEOIP,CN,DIRECT
+  # Fallthrough.
+  - MATCH,Final
