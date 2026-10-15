@@ -54,7 +54,7 @@ Main artifacts include:
 - `*.list`: Surge DOMAIN-SET files (domain-only)
 - `*.yaml`: Clash `behavior: domain` payload files
 - `*-ipcidr.yaml`: Clash `behavior: ipcidr` payload files, published only when a tag contains IP rules
-- `*.quanx`: Quantumult X `filter_remote` files
+- `*.quanx`: Quantumult X `filter_remote` files (block tags `reject` / `ads` / `ads-mini` use the `reject` policy, `gfw` uses `proxy`, other tags default to `direct`)
 - `*.srs`: sing-box binary rule-set files
 - `geosite.dat` / `geosite-cn.dat` / `geosite-gfw.dat`: V2Ray GeoSite data (domain-only)
 - `ext/*`: Extension files maintained under `source/`

@@ -95,16 +95,21 @@ GEOSITE_TAGS = (
 
 GFWLIST_TAGS = ("gfw", "gfw-skip")
 
-# QuanX policy baked into each tag's *.quanx file. Block lists ship
-# `reject` so subscribers without an explicit force-policy still block;
-# routing lists keep the neutral `direct` default.
-QUANX_POLICY_BY_TAG = {
-    "reject": "reject",
-    "ads": "reject",
-    "ads-mini": "reject",
-    "gfw": "proxy",
-    "gfw-skip": "direct",
-}
+# Tags whose Quantumult X output must block traffic: their .quanx files
+# carry the `reject` policy. Every other tag is routing-only, so its
+# .quanx file defaults to `direct` (except `gfw`, which uses `proxy`).
+# A blocklist file that says `direct` would let the blocked domains
+# through for anyone subscribing without force-policy=reject.
+QUANX_REJECT_TAGS = frozenset({"reject", "ads", "ads-mini"})
+
+
+def quanx_policy_for_tag(tag: str) -> str:
+    """Quantumult X policy for a generated tag."""
+    if tag in QUANX_REJECT_TAGS:
+        return "reject"
+    if tag == "gfw":
+        return "proxy"
+    return "direct"
 
 # Tags built from hand-maintained local sources instead of upstream data.
 # Format follows source/maintained.list: one domain per line,
@@ -560,7 +565,11 @@ def release_quanx_file(
         f.writelines(f"host, {s}, {policy}\n" for s in domain)
         f.writelines(f"host-suffix, {s}, {policy}\n" for s in domain_suffix)
         f.writelines(f"host-keyword, {s}, {policy}\n" for s in domain_keyword)
-        f.writelines(f"ip-cidr, {c}, {policy}\n" for c in ip_cidr)
+        # Quantumult X needs a separate type for IPv6: `ip6-cidr`.
+        # An IPv6 range written as `ip-cidr` would not match.
+        for cidr in ip_cidr:
+            rule_type = "ip6-cidr" if ":" in cidr else "ip-cidr"
+            f.write(f"{rule_type}, {cidr}, {policy}\n")
 
 
 def release_singbox_file(
@@ -628,7 +637,7 @@ def validate_clash_yaml(path: str) -> None:
 
 def validate_quanx_file(path: str) -> None:
     line_pattern = re.compile(
-        r"^(host|host-suffix|host-keyword|ip-cidr),\s*[^,\s]+,\s*(direct|proxy|reject)$"
+        r"^(host|host-suffix|host-keyword|ip-cidr|ip6-cidr),\s*[^,\s]+,\s*(direct|proxy|reject)$"
     )
     with open(path, encoding="utf-8") as f:
         for index, raw_line in enumerate(f, start=1):
@@ -637,6 +646,15 @@ def validate_quanx_file(path: str) -> None:
                 raise ValueError(f"{path}:{index} must not be empty")
             if not line_pattern.fullmatch(line):
                 raise ValueError(f"{path}:{index} invalid QuanX line: {line}")
+            rule_type, value, _ = (part.strip() for part in line.split(",", 2))
+            if rule_type == "ip-cidr" and ":" in value:
+                raise ValueError(
+                    f"{path}:{index} IPv6 range must use ip6-cidr, not ip-cidr: {line}"
+                )
+            if rule_type == "ip6-cidr" and ":" not in value:
+                raise ValueError(
+                    f"{path}:{index} IPv4 range must use ip-cidr, not ip6-cidr: {line}"
+                )
 
 
 def validate_singbox_json(path: str) -> None:
@@ -835,7 +853,7 @@ def _run() -> None:
             domain_keyword,
             domain_regex,
             output_tag,
-            quanx_policy=QUANX_POLICY_BY_TAG.get(output_tag, "direct"),
+            quanx_policy=quanx_policy_for_tag(output_tag),
         )
 
     # `china`: v2fly `cn` merged with felixonmars dnsmasq-china-list
@@ -848,6 +866,7 @@ def _run() -> None:
         cn_keyword,
         cn_regex,
         "china",
+        quanx_policy=quanx_policy_for_tag("china"),
     )
 
     # `ads` / `ads-mini`: hagezi Multi PRO / PRO mini blocklists
@@ -855,7 +874,7 @@ def _run() -> None:
     # daily from the upstream lists via CI.
     ads_domain, ads_suffix = parse_hagezi_onlydomains(HAGEZI_ADS_URL)
     geosite_rules["ads"] = release(
-        ads_domain, ads_suffix, [], [], "ads", quanx_policy=QUANX_POLICY_BY_TAG["ads"]
+        ads_domain, ads_suffix, [], [], "ads", quanx_policy=quanx_policy_for_tag("ads")
     )
     ads_mini_domain, ads_mini_suffix = parse_hagezi_onlydomains(
         HAGEZI_ADS_MINI_URL
@@ -866,13 +885,18 @@ def _run() -> None:
         [],
         [],
         "ads-mini",
-        quanx_policy=QUANX_POLICY_BY_TAG["ads-mini"],
+        quanx_policy=quanx_policy_for_tag("ads-mini"),
     )
 
     for output_tag, source_path in LOCAL_TAG_SOURCES.items():
         domain, domain_suffix = parse_local_domain_list(source_path)
         geosite_rules[output_tag] = release(
-            domain, domain_suffix, [], [], output_tag
+            domain,
+            domain_suffix,
+            [],
+            [],
+            output_tag,
+            quanx_policy=quanx_policy_for_tag(output_tag),
         )
 
     gfwlist_rules = parse_gfwlist(
@@ -880,9 +904,9 @@ def _run() -> None:
     )
     gfwlist_rules["gfw-skip"][0].extend(DIRECT_DOMAIN)
     gfwlist_rules["gfw-skip"][1].extend(DIRECT_DOMAIN_SUFFIX)
-    for tag, quanx_policy in (("gfw", "proxy"), ("gfw-skip", "direct")):
+    for tag in GFWLIST_TAGS:
         gfwlist_rules[tag] = release(
-            *gfwlist_rules[tag], tag, quanx_policy=quanx_policy
+            *gfwlist_rules[tag], tag, quanx_policy=quanx_policy_for_tag(tag)
         )
 
     release_geosite_files(geosite_rules, gfwlist_rules)

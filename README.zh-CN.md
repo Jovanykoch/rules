@@ -54,7 +54,7 @@ uv run python -m unittest discover -s tests
 - `*.list`：Surge DOMAIN-SET 文件（仅域名）
 - `*.yaml`：Clash `behavior: domain` 规则集文件
 - `*-ipcidr.yaml`：Clash `behavior: ipcidr` 规则集文件，仅当某标签含有 IP 规则时发布
-- `*.quanx`：Quantumult X `filter_remote` 文件
+- `*.quanx`：Quantumult X `filter_remote` 文件（拦截类标签 `reject` / `ads` / `ads-mini` 用 `reject` 策略，`gfw` 用 `proxy`，其余标签默认 `direct`）
 - `*.srs`：sing-box 二进制规则集文件
 - `geosite.dat` / `geosite-cn.dat` / `geosite-gfw.dat`：V2Ray GeoSite 数据（仅域名）
 - `ext/*`：`source/` 目录下手工维护的扩展文件

@@ -7,8 +7,8 @@ from unittest.mock import patch
 import yaml
 
 from main import (
-    QUANX_POLICY_BY_TAG,
     extract_ip_cidrs,
+    quanx_policy_for_tag,
     release_clash_file,
     release_clash_ipcidr_file,
     release_quanx_file,
@@ -68,26 +68,29 @@ class OutputFormatTests(unittest.TestCase):
             finally:
                 os.chdir(current)
 
-    def test_quanx_accepts_reject_policy(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory, "tag.quanx")
-            path.write_text("host-suffix, ads.example, reject\n")
-            validate_quanx_file(str(path))
-
-    def test_block_tags_ship_reject_quanx_policy(self):
-        # Block lists must bake `reject` into their *.quanx files so that
-        # subscribers without an explicit force-policy still block.
-        for tag in ("reject", "ads", "ads-mini"):
-            self.assertEqual(QUANX_POLICY_BY_TAG[tag], "reject")
-        self.assertEqual(QUANX_POLICY_BY_TAG["gfw"], "proxy")
-        self.assertEqual(QUANX_POLICY_BY_TAG["gfw-skip"], "direct")
-        self.assertEqual(QUANX_POLICY_BY_TAG.get("loc-cn", "direct"), "direct")
-
     def test_singbox_json_validation(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory, "tag.json")
             path.write_text(json.dumps({"version": 2, "rules": [{"domain": ["a.example"]}]}))
             validate_singbox_json(str(path))
+
+
+class QuanxPolicyTests(unittest.TestCase):
+    def test_block_tags_reject(self):
+        # Regression guard for the QuanX incident: blocklists shipped
+        # with `direct` let blocked domains through for subscribers
+        # without force-policy=reject.
+        for tag in ("reject", "ads", "ads-mini"):
+            with self.subTest(tag=tag):
+                self.assertEqual(quanx_policy_for_tag(tag), "reject")
+
+    def test_routing_tags_keep_direct_or_proxy(self):
+        self.assertEqual(quanx_policy_for_tag("gfw"), "proxy")
+        self.assertEqual(quanx_policy_for_tag("gfw-skip"), "direct")
+        for tag in ("loc-cn", "loc-!cn", "ai", "apple", "douyin", "china",
+                    "streaming-cn", "school"):
+            with self.subTest(tag=tag):
+                self.assertEqual(quanx_policy_for_tag(tag), "direct")
 
 
 class IpCidrTests(unittest.TestCase):
@@ -117,9 +120,42 @@ class IpCidrTests(unittest.TestCase):
                 validate_quanx_file("dist/tag.quanx")
                 content = Path("dist/tag.quanx").read_text().splitlines()
                 self.assertIn("ip-cidr, 1.2.3.4/32, proxy", content)
-                self.assertIn("ip-cidr, 2001:db8::/32, proxy", content)
+                # IPv6 ranges must use ip6-cidr: QuanX does not match
+                # an IPv6 range written as ip-cidr.
+                self.assertIn("ip6-cidr, 2001:db8::/32, proxy", content)
             finally:
                 os.chdir(current)
+
+    def test_quanx_accepts_reject_policy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            current = Path.cwd()
+            try:
+                Path(directory, "dist").mkdir()
+                import os
+
+                os.chdir(directory)
+                release_quanx_file(
+                    "ads", [], ["ads.example"], [], "reject"
+                )
+                validate_quanx_file("dist/ads.quanx")
+                content = Path("dist/ads.quanx").read_text().splitlines()
+                self.assertEqual(content, ["host-suffix, ads.example, reject"])
+            finally:
+                os.chdir(current)
+
+    def test_quanx_validator_rejects_ipv6_as_ip_cidr(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory, "tag.quanx")
+            path.write_text("ip-cidr, 2001:db8::/32, direct\n")
+            with self.assertRaisesRegex(ValueError, "ip6-cidr"):
+                validate_quanx_file(str(path))
+
+    def test_quanx_validator_rejects_ipv4_as_ip6_cidr(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory, "tag.quanx")
+            path.write_text("ip6-cidr, 1.2.3.4/32, direct\n")
+            with self.assertRaisesRegex(ValueError, "ip-cidr"):
+                validate_quanx_file(str(path))
 
     def test_clash_ipcidr_file_uses_bare_cidrs(self):
         with tempfile.TemporaryDirectory() as directory:
