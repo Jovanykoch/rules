@@ -2,6 +2,10 @@
 // (chnroutes.mmdb) from a plain-text CIDR list, e.g. the cn.txt
 // published by Loyalsoldier/geoip.
 //
+// Each line holds one CIDR ("1.0.1.0/24"), as published by
+// Loyalsoldier/geoip. Tokens are also split on commas, so a
+// comma-separated line still parses instead of being skipped.
+//
 // Every network in the list is mapped to country CN; any address
 // not covered has no record. That makes Surge's GEOIP,CN rule match
 // exactly the listed China ranges and nothing else.
@@ -82,20 +86,35 @@ func main() {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		_, network, err := net.ParseCIDR(line)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "skip invalid line:", line)
-			continue
+		// Split on commas: the upstream file packs many CIDRs per
+		// line. A line without commas yields a single token, so
+		// one-CIDR-per-line inputs keep working.
+		for _, tok := range strings.Split(line, ",") {
+			tok = strings.TrimSpace(tok)
+			if tok == "" || strings.HasPrefix(tok, "#") {
+				continue
+			}
+			_, network, err := net.ParseCIDR(tok)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "skip invalid CIDR:", tok)
+				continue
+			}
+			// ReplaceWith keeps the result deterministic when input
+			// ranges overlap each other.
+			if err := writer.InsertFunc(network, inserter.ReplaceWith(record)); err != nil {
+				fail("insert %s: %v", network, err)
+			}
+			inserted++
 		}
-		// ReplaceWith keeps the result deterministic when input
-		// ranges overlap each other.
-		if err := writer.InsertFunc(network, inserter.ReplaceWith(record)); err != nil {
-			fail("insert %s: %v", network, err)
-		}
-		inserted++
 	}
 	if err := scanner.Err(); err != nil {
 		fail("read input: %v", err)
+	}
+	if inserted == 0 {
+		// Never publish an empty database: it would make every
+		// GEOIP,CN lookup miss. Fail loudly instead so a bad
+		// download or a format change is noticed immediately.
+		fail("no networks inserted from %s: refusing to write an empty database", os.Args[1])
 	}
 
 	out, err := os.Create(os.Args[2])

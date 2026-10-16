@@ -14,7 +14,7 @@
 #
 # Other tags available on rel (add your own providers as needed):
 #   ads.yaml, reject.yaml, china.yaml, streaming-cn.yaml,
-#   ai.yaml, microsoft.yaml, gfw.yaml, gfw-ipcidr.yaml, loc-!cn.yaml
+#   ai.yaml, gfw.yaml, gfw-ipcidr.yaml, loc-!cn.yaml
 #
 # QUICK START
 #   1. Add your nodes under `proxies:` below.
