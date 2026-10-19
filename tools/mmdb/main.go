@@ -86,9 +86,9 @@ func main() {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		// Split on commas: the upstream file packs many CIDRs per
-		// line. A line without commas yields a single token, so
-		// one-CIDR-per-line inputs keep working.
+		// Split on commas as tolerance: upstream publishes one CIDR
+		// per line; a comma-separated line still parses instead of
+		// being skipped.
 		for _, tok := range strings.Split(line, ",") {
 			tok = strings.TrimSpace(tok)
 			if tok == "" || strings.HasPrefix(tok, "#") {
