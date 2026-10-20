@@ -42,6 +42,7 @@ uv run python -m unittest discover -s tests
 - `streaming-cn`：中国大陆流媒体/音视频服务域名（手工维护，回国场景用）
 - `school`：学校/教育机构相关域名（手工维护：jjc.edu、lanecc.edu、Microsoft 365、Google 账号、Duo、Mimecast 等）
 - `apple`：Apple 服务域名（App Store、iCloud、Apple Music、系统更新等）
+- `apple-lite`：Apple 轻量规则（手工维护，33 条，对比全量 `apple` 的约 1600 条；核心 Apple/iCloud/CDN 后缀 + Akamai 边缘关键词 + Apple 自有 IP 段，为 Loon 优先构建，其他格式同样发布）
 - `douyin`：抖音服务域名（douyin.com、snssdk.com、抖音火山版、汽水音乐、抖音支付/电商等）
 - `china`：中国大陆域名列表——v2fly `cn` 合并 felixonmars dnsmasq-china-list（约 11 万域名，与 Loyalsoldier 的 `geosite:china-list` 同配方）
 - `ads`：广告/追踪拦截列表——hagezi Multi PRO（约 23 万域名，推荐）
@@ -55,6 +56,7 @@ uv run python -m unittest discover -s tests
 - `*.yaml`：Clash `behavior: domain` 规则集文件
 - `*-ipcidr.yaml`：Clash `behavior: ipcidr` 规则集文件，仅当某标签含有 IP 规则时发布
 - `*.quanx`：Quantumult X `filter_remote` 文件（拦截类标签 `reject` / `ads` / `ads-mini` 用 `reject` 策略，`gfw` 用 `proxy`，其余标签默认 `direct`）
+- `apple-lite-loon.list`：`apple-lite` 标签的 Loon 远程规则文件（每行 `TYPE,value`，文件不带策略，策略在订阅处指定）
 - `*.srs`：sing-box 二进制规则集文件
 - `geosite.dat` / `geosite-cn.dat` / `geosite-gfw.dat`：V2Ray GeoSite 数据（仅域名）
 - `ext/*`：`source/` 目录下手工维护的扩展文件
@@ -102,6 +104,7 @@ rule-providers:
 ```
 
 - Quantumult X：将 `filter_remote` 指向 `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.quanx`
+- Loon：为 Apple 轻量规则加一条远程规则（策略在订阅处设置）：`https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite-loon.list, policy=DIRECT, tag=Apple, enabled=true`
 - sing-box：将远端规则集 URL 设为 `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.srs`
 
 ## 生成流程

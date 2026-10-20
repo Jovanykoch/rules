@@ -87,6 +87,7 @@ GEOSITE_TAGS = (
     "streaming-cn",
     "school",
     "apple",
+    "apple-lite",
     "douyin",
     "china",
     "ads",
@@ -118,6 +119,12 @@ LOCAL_TAG_SOURCES = {
     "streaming-cn": "source/streaming-cn.list",
     "school": "source/school.list",
 }
+# `apple-lite` is hand-maintained like the local tags above, but its
+# source is written in Loon remote-rule syntax (TYPE,value per line)
+# because the lite set also needs DOMAIN-KEYWORD and IP-CIDR entries,
+# which the plain local-list format (parse_local_domain_list) cannot
+# express. It is parsed by parse_loon_list instead.
+APPLE_LITE_SOURCE = "source/apple-lite.list"
 # Extra suffixes for the `douyin` tag: the upstream v2fly `douyin`
 # category only covers Beijing Douyin Technology domains, but the Douyin
 # app's core API (aweme.snssdk.com, api.snssdk.com, …) and its image CDNs
@@ -439,6 +446,69 @@ def parse_local_domain_list(path: str) -> tuple[list[str], list[str]]:
     return list(dict.fromkeys(domain)), list(dict.fromkeys(domain_suffix))
 
 
+def parse_loon_list_text(
+    content: bytes,
+) -> tuple[list[str], list[str], list[str], list[str]]:
+    """Parse a Loon remote-rule list into rule buckets.
+
+    One rule per line: ``TYPE,value`` (IP rules may carry a trailing
+    ``no-resolve`` flag); lines starting with '#' and blank lines are
+    ignored. Returns (domain, domain_suffix, domain_keyword, ip_cidr)
+    deduplicated in file order. IP values must be valid CIDR networks;
+    the rule type must match the address family (IP-CIDR = IPv4,
+    IP-CIDR6 = IPv6).
+    """
+    domain: list[str] = []
+    domain_suffix: list[str] = []
+    domain_keyword: list[str] = []
+    ip_cidr: list[str] = []
+    targets = {
+        "DOMAIN": domain,
+        "DOMAIN-SUFFIX": domain_suffix,
+        "DOMAIN-KEYWORD": domain_keyword,
+    }
+    for raw_line in content.decode("utf-8", errors="replace").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = [part.strip() for part in line.split(",")]
+        rule_type, value = parts[0].upper(), parts[1].lower() if len(parts) > 1 else ""
+        if not value:
+            raise ValueError(f"Invalid Loon rule line: {raw_line!r}")
+        if rule_type in targets:
+            if len(parts) != 2:
+                raise ValueError(f"Invalid Loon rule line: {raw_line!r}")
+            targets[rule_type].append(value)
+        elif rule_type in ("IP-CIDR", "IP-CIDR6"):
+            if len(parts) > 3 or (len(parts) == 3 and parts[2] != "no-resolve"):
+                raise ValueError(f"Invalid Loon rule line: {raw_line!r}")
+            try:
+                network = ipaddress.ip_network(value)
+            except ValueError as error:
+                raise ValueError(f"Invalid Loon CIDR rule: {raw_line!r}") from error
+            expected_version = 4 if rule_type == "IP-CIDR" else 6
+            if network.version != expected_version:
+                raise ValueError(
+                    f"Loon rule {raw_line!r}: {rule_type} requires an "
+                    f"IPv{expected_version} network"
+                )
+            ip_cidr.append(value)
+        else:
+            raise ValueError(f"Unsupported Loon rule type: {raw_line!r}")
+    return (
+        list(dict.fromkeys(domain)),
+        list(dict.fromkeys(domain_suffix)),
+        list(dict.fromkeys(domain_keyword)),
+        list(dict.fromkeys(ip_cidr)),
+    )
+
+
+def parse_loon_list(path: str) -> tuple[list[str], list[str], list[str], list[str]]:
+    """Read and parse a hand-maintained Loon-format list (see source/apple-lite.list)."""
+    with open(path, "rb") as f:
+        return parse_loon_list_text(f.read())
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Release — generate output files for all supported proxy platforms
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -472,12 +542,13 @@ def release(
     tag: str,
     *,
     quanx_policy: str = "direct",
+    extra_ip_cidr: list[str] = (),
 ) -> DomainResult:
     """Generate output files (Surge, Clash, QuanX, sing-box) for *tag*."""
     log.info("Releasing tag: %s", tag)
     domain, domain_ips = extract_ip_cidrs(domain)
     domain_suffix, suffix_ips = extract_ip_cidrs(domain_suffix)
-    ip_cidr = list(dict.fromkeys([*domain_ips, *suffix_ips]))
+    ip_cidr = list(dict.fromkeys([*domain_ips, *suffix_ips, *extra_ip_cidr]))
     if ip_cidr:
         log.info(
             "Tag %s: moved %d IP literal(s) to ip_cidr rules",
@@ -605,6 +676,29 @@ def release_singbox_file(
     )
 
 
+def release_loon_file(
+    tag: str,
+    domain: list[str],
+    domain_suffix: list[str],
+    domain_keyword: list[str],
+    ip_cidr: list[str] = (),
+) -> None:
+    """Write a Loon remote-rule file (``dist/{tag}-loon.list``).
+
+    Loon remote rules carry no policy: the policy is assigned where the
+    file is subscribed, so lines are just ``TYPE,value`` (plus the
+    ``no-resolve`` flag on IP rules).
+    """
+    filename = f"dist/{tag}-loon.list"
+    with open(filename, "w", encoding="utf-8") as f:
+        f.writelines(f"DOMAIN,{s}\n" for s in domain)
+        f.writelines(f"DOMAIN-SUFFIX,{s}\n" for s in domain_suffix)
+        f.writelines(f"DOMAIN-KEYWORD,{s}\n" for s in domain_keyword)
+        for cidr in ip_cidr:
+            rule_type = "IP-CIDR6" if ":" in cidr else "IP-CIDR"
+            f.write(f"{rule_type},{cidr},no-resolve\n")
+
+
 def validate_surge_file(path: str) -> None:
     domain_line = re.compile(r"^\.?[A-Za-z0-9.-]+$")
     with open(path, encoding="utf-8") as f:
@@ -657,6 +751,34 @@ def validate_quanx_file(path: str) -> None:
                 )
 
 
+def validate_loon_file(path: str) -> None:
+    line_pattern = re.compile(
+        r"^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD),[^,\s]+$"
+        r"|^(IP-CIDR|IP-CIDR6),[^,\s]+,no-resolve$"
+    )
+    with open(path, encoding="utf-8") as f:
+        for index, raw_line in enumerate(f, start=1):
+            line = raw_line.strip()
+            if not line:
+                raise ValueError(f"{path}:{index} must not be empty")
+            if not line_pattern.fullmatch(line):
+                raise ValueError(f"{path}:{index} invalid Loon line: {line}")
+            rule_type, value = (part.strip() for part in line.split(",", 2)[:2])
+            if rule_type.startswith("IP-CIDR"):
+                try:
+                    network = ipaddress.ip_network(value)
+                except ValueError as error:
+                    raise ValueError(
+                        f"{path}:{index} invalid CIDR in Loon line: {line}"
+                    ) from error
+                expected_version = 6 if rule_type == "IP-CIDR6" else 4
+                if network.version != expected_version:
+                    raise ValueError(
+                        f"{path}:{index} {rule_type} requires an "
+                        f"IPv{expected_version} network: {line}"
+                    )
+
+
 def validate_singbox_json(path: str) -> None:
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -686,6 +808,8 @@ def validate_outputs(tags: tuple[str, ...]) -> None:
         validate_surge_file(f"dist/{tag}.list")
         validate_clash_yaml(f"dist/{tag}.yaml")
         validate_quanx_file(f"dist/{tag}.quanx")
+        if tag == "apple-lite":
+            validate_loon_file(f"dist/{tag}-loon.list")
         validate_singbox_json(f"tmp/{tag}.json")
         validate_non_empty_file(f"dist/{tag}.srs")
         ipcidr_path = f"dist/{tag}-ipcidr.yaml"
@@ -898,6 +1022,30 @@ def _run() -> None:
             output_tag,
             quanx_policy=quanx_policy_for_tag(output_tag),
         )
+
+    # `apple-lite`: hand-maintained lightweight Apple set (33 rules vs
+    # the full v2fly `apple` tag's ~1.6k), kept in Loon syntax under
+    # source/ and published in every format plus a Loon remote-rule
+    # file (dist/apple-lite-loon.list, no embedded policy).
+    lite_domain, lite_suffix, lite_keyword, lite_ip_cidr = parse_loon_list(
+        APPLE_LITE_SOURCE
+    )
+    geosite_rules["apple-lite"] = release(
+        lite_domain,
+        lite_suffix,
+        lite_keyword,
+        [],
+        "apple-lite",
+        quanx_policy=quanx_policy_for_tag("apple-lite"),
+        extra_ip_cidr=lite_ip_cidr,
+    )
+    release_loon_file(
+        "apple-lite",
+        geosite_rules["apple-lite"][0],
+        geosite_rules["apple-lite"][1],
+        geosite_rules["apple-lite"][2],
+        lite_ip_cidr,
+    )
 
     gfwlist_rules = parse_gfwlist(
         "https://raw.githubusercontent.com/gfwlist/gfwlist/master/list.txt"

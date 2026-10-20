@@ -60,6 +60,7 @@ class LocalTagConfigTests(unittest.TestCase):
         self.assertIn("streaming-cn", GEOSITE_TAGS)
         self.assertIn("school", GEOSITE_TAGS)
         self.assertIn("apple", GEOSITE_TAGS)
+        self.assertIn("apple-lite", GEOSITE_TAGS)
         self.assertIn("douyin", GEOSITE_TAGS)
         self.assertIn("china", GEOSITE_TAGS)
         self.assertIn("ads", GEOSITE_TAGS)

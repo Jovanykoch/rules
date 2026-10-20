@@ -1,0 +1,62 @@
+# Apple 轻量规则（手工维护，Loon 优先）。
+#
+# 这是 `apple` 全量标签（v2fly，上千条）的精简版：只保留日常
+# iOS/macOS 真正用到的 Apple 核心域名，用后缀/关键词覆盖，
+# 砍掉各国 apple.com 变体、Beats 假域名与逐条 akdns 精确主机。
+#
+# 本文件本身就是 Loon 远程规则格式（每行 TYPE,value，文件不带
+# 策略，策略在订阅处指定）。构建时除发布为 Loon 文件
+# dist/apple-lite-loon.list 外，也按其他标签一样生成 Surge /
+# Clash / Quantumult X / sing-box 全格式产物
+# （dist/apple-lite.list / .yaml / .quanx / .srs）。
+#
+# Loon 订阅示例：
+#   [Remote Rule]
+#   https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite-loon.list, policy=DIRECT, tag=Apple, enabled=true
+#
+# 格式：DOMAIN / DOMAIN-SUFFIX / DOMAIN-KEYWORD / IP-CIDR /
+# IP-CIDR6，每行一条；IP 行尾的 no-resolve 表示不触发 DNS 解析。
+# 以 '#' 开头的行是注释。
+
+# ── 核心 ──
+DOMAIN-SUFFIX,apple.com
+DOMAIN-SUFFIX,apple.com.cn
+DOMAIN-SUFFIX,apple.co
+DOMAIN-SUFFIX,apple.news
+DOMAIN-SUFFIX,appstore.com
+DOMAIN-SUFFIX,itunes.com
+DOMAIN,apple.comscoreresearch.com
+
+# ── iCloud / 账号 / 服务 ──
+DOMAIN-SUFFIX,icloud.com
+DOMAIN-SUFFIX,icloud.com.cn
+DOMAIN-SUFFIX,icloud-content.com
+DOMAIN-SUFFIX,me.com
+DOMAIN-SUFFIX,apple-cloudkit.com
+DOMAIN-SUFFIX,apple-mapkit.com
+
+# ── CDN / 媒体 / DNS ──
+DOMAIN-SUFFIX,mzstatic.com
+DOMAIN-SUFFIX,aaplimg.com
+DOMAIN-SUFFIX,cdn-apple.com
+DOMAIN-SUFFIX,apple-dns.com
+DOMAIN-SUFFIX,apple-dns.com.cn
+DOMAIN-SUFFIX,apple-dns.net
+DOMAIN-SUFFIX,apple-dns.cn
+
+# ── 边缘 / Akamai（替代全量版里 50+ 条 akdns 精确主机） ──
+DOMAIN-KEYWORD,apple.com.akadns.net
+DOMAIN-KEYWORD,icloud.com.akadns.net
+DOMAIN-KEYWORD,apple.com.edgekey.net
+
+# ── Apple 自有 IP 段（应用按 IP 直连时用） ──
+IP-CIDR,17.0.0.0/8,no-resolve
+IP-CIDR,63.92.224.0/19,no-resolve
+IP-CIDR,65.199.22.0/23,no-resolve
+IP-CIDR,139.178.128.0/18,no-resolve
+IP-CIDR,144.178.0.0/19,no-resolve
+IP-CIDR,144.178.36.0/22,no-resolve
+IP-CIDR,144.178.48.0/20,no-resolve
+IP-CIDR6,2403:300::/32,no-resolve
+IP-CIDR6,2620:149::/32,no-resolve
+IP-CIDR6,2a01:b740::/32,no-resolve

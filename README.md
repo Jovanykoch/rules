@@ -42,6 +42,7 @@ uv run python -m unittest discover -s tests
 - `streaming-cn`: Mainland-China streaming/media service domains (hand-maintained, for back-to-China routing)
 - `school`: School and education service domains (hand-maintained: jjc.edu, lanecc.edu, Microsoft 365, Google accounts, Duo Security, Mimecast, …)
 - `apple`: Apple service domains (App Store, iCloud, Apple Music, software updates, …)
+- `apple-lite`: Lightweight Apple service domains (hand-maintained, 33 rules vs the full `apple` tag's ~1.6k; core Apple/iCloud/CDN suffixes, Akamai edge keywords, and Apple IP ranges — built for Loon, also published in every other format)
 - `douyin`: Douyin (TikTok China) service domains (douyin.com, snssdk.com, Douyin Lite/Huoshan, Qishui Music, Douyin Pay/E-commerce, …)
 - `china`: Mainland-China domain list — v2fly `cn` merged with felixonmars dnsmasq-china-list (~110k domains, same recipe as Loyalsoldier's `geosite:china-list`)
 - `ads`: Ad/tracker blocklist — hagezi Multi PRO (~230k domains, recommended)
@@ -55,6 +56,7 @@ Main artifacts include:
 - `*.yaml`: Clash `behavior: domain` payload files
 - `*-ipcidr.yaml`: Clash `behavior: ipcidr` payload files, published only when a tag contains IP rules
 - `*.quanx`: Quantumult X `filter_remote` files (block tags `reject` / `ads` / `ads-mini` use the `reject` policy, `gfw` uses `proxy`, other tags default to `direct`)
+- `apple-lite-loon.list`: Loon remote-rule file for the `apple-lite` tag (`TYPE,value` lines with no embedded policy; the policy is assigned where the file is subscribed)
 - `*.srs`: sing-box binary rule-set files
 - `geosite.dat` / `geosite-cn.dat` / `geosite-gfw.dat`: V2Ray GeoSite data (domain-only)
 - `ext/*`: Extension files maintained under `source/`
@@ -102,6 +104,7 @@ rule-providers:
 ```
 
 - Quantumult X: Set `filter_remote` to `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.quanx`
+- Loon: Add a remote rule for the lightweight Apple set (policy is set at subscription time): `https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite-loon.list, policy=DIRECT, tag=Apple, enabled=true`
 - sing-box: Set the remote rule-set URL to `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.srs`
 
 ## Generation Pipeline

@@ -87,8 +87,8 @@ class QuanxPolicyTests(unittest.TestCase):
     def test_routing_tags_keep_direct_or_proxy(self):
         self.assertEqual(quanx_policy_for_tag("gfw"), "proxy")
         self.assertEqual(quanx_policy_for_tag("gfw-skip"), "direct")
-        for tag in ("loc-cn", "loc-!cn", "ai", "apple", "douyin", "china",
-                    "streaming-cn", "school"):
+        for tag in ("loc-cn", "loc-!cn", "ai", "apple", "apple-lite", "douyin",
+                    "china", "streaming-cn", "school"):
             with self.subTest(tag=tag):
                 self.assertEqual(quanx_policy_for_tag(tag), "direct")
 
