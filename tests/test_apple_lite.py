@@ -91,9 +91,10 @@ class LoonOutputTests(unittest.TestCase):
                     ["example.com"],
                     ["example.akadns.net"],
                     ["17.0.0.0/8", "2620:149::/32"],
+                    output_name="apple-lite.list",
                 )
-                validate_loon_file("dist/apple-lite-loon.list")
-                content = Path("dist/apple-lite-loon.list").read_text().splitlines()
+                validate_loon_file("dist/apple-lite.list")
+                content = Path("dist/apple-lite.list").read_text().splitlines()
                 self.assertEqual(
                     content,
                     [

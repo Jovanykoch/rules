@@ -56,7 +56,7 @@ uv run python -m unittest discover -s tests
 - `*.yaml`：Clash `behavior: domain` 规则集文件
 - `*-ipcidr.yaml`：Clash `behavior: ipcidr` 规则集文件，仅当某标签含有 IP 规则时发布
 - `*.quanx`：Quantumult X `filter_remote` 文件（拦截类标签 `reject` / `ads` / `ads-mini` 用 `reject` 策略，`gfw` 用 `proxy`，其余标签默认 `direct`）
-- `apple-lite-loon.list`：`apple-lite` 标签的 Loon 远程规则文件（每行 `TYPE,value`，文件不带策略，策略在订阅处指定）
+- `apple-lite.list`：上面 Surge 规则的唯一例外——`apple-lite` 标签的 `.list` 就是它的 Loon 远程规则文件（每行 `TYPE,value`，文件不带策略，策略在订阅处指定）。Surge 用户请改用全量 `apple` 标签。
 - `*.srs`：sing-box 二进制规则集文件
 - `geosite.dat` / `geosite-cn.dat` / `geosite-gfw.dat`：V2Ray GeoSite 数据（仅域名）
 - `ext/*`：`source/` 目录下手工维护的扩展文件
@@ -104,7 +104,7 @@ rule-providers:
 ```
 
 - Quantumult X：将 `filter_remote` 指向 `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.quanx`
-- Loon：为 Apple 轻量规则加一条远程规则（策略在订阅处设置）：`https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite-loon.list, policy=DIRECT, tag=Apple, enabled=true`
+- Loon：为 Apple 轻量规则加一条远程规则（策略在订阅处设置）：`https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite.list, policy=DIRECT, tag=Apple, enabled=true`
 - sing-box：将远端规则集 URL 设为 `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.srs`
 
 ## 生成流程

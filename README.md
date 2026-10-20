@@ -56,7 +56,7 @@ Main artifacts include:
 - `*.yaml`: Clash `behavior: domain` payload files
 - `*-ipcidr.yaml`: Clash `behavior: ipcidr` payload files, published only when a tag contains IP rules
 - `*.quanx`: Quantumult X `filter_remote` files (block tags `reject` / `ads` / `ads-mini` use the `reject` policy, `gfw` uses `proxy`, other tags default to `direct`)
-- `apple-lite-loon.list`: Loon remote-rule file for the `apple-lite` tag (`TYPE,value` lines with no embedded policy; the policy is assigned where the file is subscribed)
+- `apple-lite.list`: The one exception to the Surge rule above — the `apple-lite` tag's `.list` is its Loon remote-rule file (`TYPE,value` lines with no embedded policy; the policy is assigned where the file is subscribed). Surge users should use the full `apple` tag instead.
 - `*.srs`: sing-box binary rule-set files
 - `geosite.dat` / `geosite-cn.dat` / `geosite-gfw.dat`: V2Ray GeoSite data (domain-only)
 - `ext/*`: Extension files maintained under `source/`
@@ -104,7 +104,7 @@ rule-providers:
 ```
 
 - Quantumult X: Set `filter_remote` to `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.quanx`
-- Loon: Add a remote rule for the lightweight Apple set (policy is set at subscription time): `https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite-loon.list, policy=DIRECT, tag=Apple, enabled=true`
+- Loon: Add a remote rule for the lightweight Apple set (policy is set at subscription time): `https://raw.githubusercontent.com/Jovanykoch/rules/rel/apple-lite.list, policy=DIRECT, tag=Apple, enabled=true`
 - sing-box: Set the remote rule-set URL to `https://raw.githubusercontent.com/Jovanykoch/rules/rel/reject.srs`
 
 ## Generation Pipeline

@@ -682,14 +682,16 @@ def release_loon_file(
     domain_suffix: list[str],
     domain_keyword: list[str],
     ip_cidr: list[str] = (),
+    output_name: str | None = None,
 ) -> None:
-    """Write a Loon remote-rule file (``dist/{tag}-loon.list``).
+    """Write a Loon remote-rule file (``dist/{tag}-loon.list`` by default).
 
     Loon remote rules carry no policy: the policy is assigned where the
     file is subscribed, so lines are just ``TYPE,value`` (plus the
-    ``no-resolve`` flag on IP rules).
+    ``no-resolve`` flag on IP rules). ``output_name`` overrides the
+    output file name inside ``dist/``.
     """
-    filename = f"dist/{tag}-loon.list"
+    filename = f"dist/{output_name or f'{tag}-loon.list'}"
     with open(filename, "w", encoding="utf-8") as f:
         f.writelines(f"DOMAIN,{s}\n" for s in domain)
         f.writelines(f"DOMAIN-SUFFIX,{s}\n" for s in domain_suffix)
@@ -805,11 +807,14 @@ def validate_non_empty_file(path: str) -> None:
 
 def validate_outputs(tags: tuple[str, ...]) -> None:
     for tag in tags:
-        validate_surge_file(f"dist/{tag}.list")
+        if tag == "apple-lite":
+            # Exception to the *.list = Surge rule: apple-lite's .list
+            # is its Loon file (see the apple-lite block in _run()).
+            validate_loon_file(f"dist/{tag}.list")
+        else:
+            validate_surge_file(f"dist/{tag}.list")
         validate_clash_yaml(f"dist/{tag}.yaml")
         validate_quanx_file(f"dist/{tag}.quanx")
-        if tag == "apple-lite":
-            validate_loon_file(f"dist/{tag}-loon.list")
         validate_singbox_json(f"tmp/{tag}.json")
         validate_non_empty_file(f"dist/{tag}.srs")
         ipcidr_path = f"dist/{tag}-ipcidr.yaml"
@@ -1025,8 +1030,11 @@ def _run() -> None:
 
     # `apple-lite`: hand-maintained lightweight Apple set (33 rules vs
     # the full v2fly `apple` tag's ~1.6k), kept in Loon syntax under
-    # source/ and published in every format plus a Loon remote-rule
-    # file (dist/apple-lite-loon.list, no embedded policy).
+    # source/ and published in every format. Its primary .list file is
+    # the Loon remote-rule file itself (dist/apple-lite.list, no
+    # embedded policy) — it overwrites the Surge DOMAIN-SET file that
+    # release() just wrote, because the lite set exists for Loon and
+    # Surge users are served by the full `apple` tag.
     lite_domain, lite_suffix, lite_keyword, lite_ip_cidr = parse_loon_list(
         APPLE_LITE_SOURCE
     )
@@ -1045,6 +1053,7 @@ def _run() -> None:
         geosite_rules["apple-lite"][1],
         geosite_rules["apple-lite"][2],
         lite_ip_cidr,
+        output_name="apple-lite.list",
     )
 
     gfwlist_rules = parse_gfwlist(
