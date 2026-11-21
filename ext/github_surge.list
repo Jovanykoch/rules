@@ -1,0 +1,18 @@
+# GitHub API domains
+DOMAIN,api.github.com,PROXY
+DOMAIN,uploads.github.com,PROXY
+# GitHub authentication and release browsing domains
+DOMAIN-SUFFIX,github.com,PROXY
+# GitHub CDN and release download domains
+DOMAIN,codeload.github.com,PROXY
+DOMAIN-SUFFIX,github-releases.githubusercontent.com,PROXY
+DOMAIN-SUFFIX,release-assets.githubusercontent.com,PROXY
+DOMAIN-SUFFIX,objects.githubusercontent.com,PROXY
+# GitHub raw files, archives, and package/content delivery domains
+DOMAIN-SUFFIX,raw.githubusercontent.com,PROXY
+DOMAIN-SUFFIX,pkg.github.com,PROXY
+DOMAIN-SUFFIX,pkg-containers.githubusercontent.com,PROXY
+# GitHub avatars and static/content asset domains
+DOMAIN-SUFFIX,avatars.githubusercontent.com,PROXY
+DOMAIN-SUFFIX,github.githubassets.com,PROXY
+DOMAIN-SUFFIX,assets-cdn.github.com,PROXY
