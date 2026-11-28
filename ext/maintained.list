@@ -1,0 +1,9 @@
+# Hand-maintained extra domains, published as dist/ext/maintained.list.
+#
+# Use this file for domains you curate yourself that do not belong to any
+# generated tag. One domain per line:
+#   example.com      exact domain
+#   .example.org     domain suffix (leading dot)
+#
+# Lines starting with '#' are comments. The file is intentionally empty;
+# add your domains below this header.
